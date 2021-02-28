@@ -3,13 +3,15 @@ FROM ubuntu:20.04
 LABEL maintainer="joseph@pushcorn.com"
 
 RUN apt-get update && apt-get -y install \
+    bash-completion \
     iproute2 \
+    iputils-ping \
     jq \
     locales \
+    netcat \
     telnet \
     vim-tiny \
     wget \
-    bash-completion \
     && rm -rf /var/lib/apt/lists/* \
     \
     && find /usr/share/i18n/locales/ -type f ! -name en_US ! -name en_GB ! -name "translit*" ! -name C ! -name POSIX ! -name "i18n*" ! -name iso14651_t1_common ! -name iso14651_t1 -delete \
