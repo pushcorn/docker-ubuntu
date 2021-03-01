@@ -32,9 +32,10 @@ RUN apt-get update \
         && rm ./* \
     \
     && cd /root \
+        && QD_URL=https://bitbucket.org/josephtzeng/quick-and-dirty/raw/master \
         && mkdir -p .qd/bin .bashrc.d .bash_completion.d \
-        && curl -sL https://bitbucket.org/josephtzeng/quick-and-dirty/raw/master/bin/qd -o .qd/bin/qd \
-        && curl -sL https://bitbucket.org/josephtzeng/quick-and-dirty/raw/master/modules/bash/resources/bash_completion.d/qd -o .bash_completion.d/qd \
+        && curl -sL $QD_URL/bin/qd -o .qd/bin/qd \
+        && curl -sL $QD_URL/modules/bash/resources/bash_completion.d/qd -o .bash_completion.d/qd \
         && chmod u+x .qd/bin/qd
 
 ENV PATH=/root/.qd/bin:$PATH
