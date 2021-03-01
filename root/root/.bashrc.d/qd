@@ -3,3 +3,5 @@
 QD_BIN="$(which qd)"
 
 [ -f $QD_BIN ] && . $QD_BIN
+
+alias qt="qd :run-task --task"
