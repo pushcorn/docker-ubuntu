@@ -5,11 +5,13 @@ LABEL maintainer="joseph@pushcorn.com"
 RUN apt-get update \
     && apt-get -y install \
         bash-completion \
+        curl \
         iproute2 \
         iputils-ping \
         jq \
         locales \
         netcat \
+        rsync \
         silversearcher-ag \
         telnet \
         tree \
