@@ -17,7 +17,6 @@ RUN apt-get update \
         tree \
         unzip \
         vim-tiny \
-        wget \
     && rm -rf /var/lib/apt/lists/* \
     \
     && cd /usr/share/i18n \
@@ -34,10 +33,9 @@ RUN apt-get update \
     \
     && cd /root \
         && mkdir -p .qd/bin .bashrc.d .bash_completion.d \
-        && wget https://bitbucket.org/josephtzeng/quick-and-dirty/raw/master/bin/qd -O .qd/bin/qd \
-        && wget https://bitbucket.org/josephtzeng/quick-and-dirty/raw/master/modules/bash/resources/bash_completion.d/qd -O .bash_completion.d/qd \
-        && chmod u+x .qd/bin/qd \
-        && rm .wget-hsts
+        && curl -sL https://bitbucket.org/josephtzeng/quick-and-dirty/raw/master/bin/qd -o .qd/bin/qd \
+        && curl -sL https://bitbucket.org/josephtzeng/quick-and-dirty/raw/master/modules/bash/resources/bash_completion.d/qd -o .bash_completion.d/qd \
+        && chmod u+x .qd/bin/qd
 
 ENV PATH=/root/.qd/bin:$PATH
 ENV QD_MESSAGE_TS=true
