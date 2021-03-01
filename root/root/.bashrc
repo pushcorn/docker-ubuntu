@@ -6,28 +6,10 @@ HISTSIZE=10000
 HISTIGNORE="ls:ll"
 UNAME=$(uname)
 shopt -s histappend
-PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME%%.*}:${PWD##*/}\007"'
 
-if [ -d ~/.bashrc.d ]; then
-    for i in $(ls ~/.bashrc.d/* 2> /dev/null) ; do
-        . $i
-    done
+if [ "$PS1" ]; then
+    PS1="\[\033[1;31m\][\w] \[\033[1;34m\]-\u@\h-\[\033[1;33m\] \\$\[\033[0m\] "
 fi
-
-if [ -d ~/.bash_completion.d ]; then
-    for i in $(ls ~/.bash_completion.d/* 2> /dev/null) ; do
-        . $i
-    done
-fi
-
-# if [ "$PS1" ]; then
-    # PS1="\[\033[1;31m\][\w] \[\033[1;34m\]-\u@\h-\[\033[1;33m\] \\$\[\033[0m\] "
-
-    # for i in /etc/profile.d/*
-    # do
-        # . $i
-    # done
-# fi
 
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
@@ -52,4 +34,16 @@ function fd { find . -depth -path "*" -iname "$1" -type d -print; }
 
 if [ -f "$BASH_COMPLETION_PREFIX/etc/bash_completion" ]; then
     . "$BASH_COMPLETION_PREFIX/etc/bash_completion"
+fi
+
+if [ -d ~/.bashrc.d ]; then
+    for i in $(ls ~/.bashrc.d/* 2> /dev/null) ; do
+        . $i
+    done
+fi
+
+if [ -d ~/.bash_completion.d ]; then
+    for i in $(ls ~/.bash_completion.d/* 2> /dev/null) ; do
+        . $i
+    done
 fi
