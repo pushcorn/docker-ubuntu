@@ -45,4 +45,6 @@ COPY root/ /
 
 WORKDIR /root
 
-CMD ["/bin/bash"]
+ENTRYPOINT ["qd"]
+
+CMD [":shell"]
