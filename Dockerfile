@@ -29,19 +29,27 @@ RUN apt-get update \
         && infocmp -I xterm > xterm \
         && sed -e 's/smcup[^,]*,\s*//' -e 's/rmcup[^,]*,\s*//' xterm > xterm.src \
         && tic xterm.src \
-        && rm ./* \
-    \
-    && cd /root \
-        && QD_URL=https://bitbucket.org/josephtzeng/quick-and-dirty/raw/master \
-        && mkdir -p .qd/bin .bashrc.d .bash_completion.d \
-        && curl -sL $QD_URL/bin/qd -o .qd/bin/qd \
-        && curl -sL $QD_URL/modules/bash/resources/bash_completion.d/qd -o .bash_completion.d/qd \
-        && chmod u+x .qd/bin/qd
+        && rm ./*
+
+ARG QD_VERSION=2.1.0
 
 ENV PATH=/root/.qd/bin:$PATH
 ENV QD_MESSAGE_TS=true
 
-COPY root/ /
+RUN cd /root \
+        && QD_URL=https://bitbucket.org/josephtzeng/quick-and-dirty/raw/$QD_VERSION \
+        && mkdir -p .qd/bin .bashrc.d .bash_completion.d \
+        && curl -sL $QD_URL/bin/qd -o .qd/bin/qd \
+        && curl -sL $QD_URL/bin/qt -o .qd/bin/qt \
+        && curl -sL $QD_URL/modules/bash/resources/bash_completion.d/qd -o .bash_completion.d/qd \
+        && chmod u+x .qd/bin/* \
+        && qd :install \
+            --command ubuntu:add-ppa-repo \
+            --command ubuntu:begin-apt-install \
+            --command ubuntu:end-apt-install
+
+COPY root /
+COPY .qd /root/.qd
 
 WORKDIR /root
 
