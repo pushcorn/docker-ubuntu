@@ -2,6 +2,10 @@ FROM ubuntu:latest
 
 LABEL maintainer="joseph@pushcorn.com"
 
+ARG TIMEZONE=America/Indiana/Indianapolis
+
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update \
     && apt-get -y install \
         bash-completion \
@@ -15,6 +19,7 @@ RUN apt-get update \
         silversearcher-ag \
         telnet \
         tree \
+        tzdata \
         unzip \
         vim-tiny \
     && rm -rf /var/lib/apt/lists/* \
@@ -26,12 +31,14 @@ RUN apt-get update \
         && locale-gen en_US.UTF-8 \
     \
     && cd /tmp \
+        && ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime \
+        && dpkg-reconfigure tzdata \
         && infocmp -I xterm > xterm \
         && sed -e 's/smcup[^,]*,\s*//' -e 's/rmcup[^,]*,\s*//' xterm > xterm.src \
         && tic xterm.src \
         && rm ./*
 
-ARG QD_VERSION=2.1.0
+ARG QD_VERSION=2.1.1
 
 ENV PATH=/root/.qd/bin:$PATH
 ENV QD_MESSAGE_TS=true
