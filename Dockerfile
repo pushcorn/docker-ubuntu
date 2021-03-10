@@ -38,7 +38,7 @@ RUN apt-get update \
         && tic xterm.src \
         && rm ./*
 
-ARG QD_VERSION=2.1.1
+ARG QD_VERSION=2.1.2
 
 ENV PATH=/root/.qd/bin:$PATH
 ENV QD_MESSAGE_TS=true
