@@ -79,26 +79,3 @@ map <C-I> g<C-G>
 
 nnoremap <D-Left> :tabprevious<CR>
 nnoremap <D-Right> :tabnext<CR>
-
-"let $dir_dict = '/etc/vim/dict/'
-"execute "set dictionary+=" . $dir_dict . expand ("%:e")
-
-" horizontal to vertical
-" :windo wincmd H
-"
-" vertical to horizontal
-" :windo wincmd K
-"
-":winpos 600 100
-
-nnoremap <Leader>s :%s/\<<C-r><C-w>\>/
-nnoremap <Leader>ss :cexpr []<CR>:silent grep "<C-r><C-w>" * -r -i -a<CR>:cw<CR>:redraw!<CR>
-nnoremap <Leader>e :edit <C-r>=launch_dir<CR><C-D>
-nnoremap <Leader>f gf<CR>
-nnoremap <Leader>t :vert term<CR>
-" to vertical
-nnoremap <Leader>wv :wincmd H<CR>
-" to horizontal
-nnoremap <Leader>wh :wincmd J<CR>
-" rotate
-nnoremap <Leader>wr :wincmd r<CR>
