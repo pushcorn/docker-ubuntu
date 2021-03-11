@@ -38,8 +38,11 @@ RUN apt-get update \
         && tic xterm.src \
         && rm ./*
 
-ARG QD_VERSION=2.1.2
+ARG QD_VERSION=2.1.3
+ARG BUILD_ID=NA
 
+ENV QD_VERSION=$QD_VERSION
+ENV BUILD_ID=$BUILD_ID
 ENV PATH=/root/.qd/bin:$PATH
 ENV QD_MESSAGE_TS=true
 
@@ -51,6 +54,7 @@ RUN cd /root \
         && curl -sL $QD_URL/modules/bash/resources/bash_completion.d/qd -o .bash_completion.d/qd \
         && chmod u+x .qd/bin/* \
         && qd :install \
+            --command render-template \
             --command ubuntu:add-ppa-repo \
             --command ubuntu:begin-apt-install \
             --command ubuntu:end-apt-install
