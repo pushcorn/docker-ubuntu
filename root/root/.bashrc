@@ -6,6 +6,7 @@ HISTSIZE=10000
 HISTIGNORE="ls:ll"
 UNAME=$(uname)
 shopt -s histappend
+PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 
 if [ "$PS1" ]; then
     PS1="\[\033[1;31m\][\w] \[\033[1;34m\]-\u@\h-\[\033[1;33m\] \\$\[\033[0m\] "
