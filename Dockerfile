@@ -38,7 +38,7 @@ RUN apt-get update \
         && tic xterm.src \
         && rm ./*
 
-ARG QD_VERSION=2.3.0
+ARG QD_VERSION=2.3.1
 ARG BUILD_ID=NA
 
 ENV QD_VERSION=$QD_VERSION
