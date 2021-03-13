@@ -22,7 +22,7 @@ RUN apt-get update \
         tzdata \
         unzip \
         vim-tiny \
-    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/apt/lists/* /etc/cron* \
     \
     && cd /usr/share/i18n \
         && find locales/ -type f ! -name en_US ! -name en_GB ! -name "translit*" ! -name C ! -name POSIX ! -name "i18n*" ! -name iso14651_t1_common ! -name iso14651_t1 -delete \
@@ -38,7 +38,7 @@ RUN apt-get update \
         && tic xterm.src \
         && rm ./*
 
-ARG QD_VERSION=2.1.4
+ARG QD_VERSION=2.2.0
 ARG BUILD_ID=NA
 
 ENV QD_VERSION=$QD_VERSION

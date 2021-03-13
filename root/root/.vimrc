@@ -22,7 +22,9 @@ set viminfo='10,\"100,:20,%,n~/.viminfo
 
 set clipboard=unnamed
 set showmatch
-set smartindent
+set cindent
+set cinkeys-=0#
+set indentkeys-=0#
 set complete-=k complete+=k
 set completeopt=longest,menuone
 set wildmenu
