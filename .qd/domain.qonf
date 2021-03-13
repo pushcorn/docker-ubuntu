@@ -1,1 +1,1 @@
-#! docker.tag:      pushcorn/ubuntu
+#! docker.name: pushcorn/ubuntu
