@@ -1,0 +1,27 @@
+#!/bin/bash
+
+describe_command ()
+{
+    echo "Start the TinySSH server."
+}
+
+
+describe_command_options ()
+{
+    qd_describe_command_option "port" "int" "The listening port." true $QDS_TINYSSH_PORT
+    qd_describe_command_option "address" "string" "The listening address." true $QDS_TINYSSH_ADDRESS
+    qd_describe_command_option "keydir" "string" "The key dir." true "$QDS_TINYSSH_KEYDIR"
+    qd_describe_command_option "log" "string" "The log file." false "$QDS_TINYSSH_LOG"
+}
+
+
+run_command ()
+{
+    if [ -z "$(ls $QDC_KEYDIR 2> /dev/null)" ]; then
+        tinysshd-makekey $QDC_KEYDIR
+    fi
+
+    qd_info "Start TinySSH at $QDC_ADDRESS:$QDC_PORT"
+
+    tcpserver -HRDl0 $QDC_ADDRESS $QDC_PORT tinysshd -v $QDC_KEYDIR 2>&1 | qd_log_with &> ${QDC_LOG:-/dev/stdout}
+}
