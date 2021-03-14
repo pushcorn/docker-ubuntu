@@ -18,8 +18,10 @@ RUN apt-get update \
         rsync \
         silversearcher-ag \
         telnet \
+        tinysshd \
         tree \
         tzdata \
+        ucspi-tcp \
         unzip \
         vim-tiny \
     && rm -rf /var/lib/apt/lists/* /etc/cron* \
@@ -38,11 +40,9 @@ RUN apt-get update \
         && tic xterm.src \
         && rm ./*
 
-ARG QD_VERSION=2.4.0
-ARG BUILD_ID=NA
-
+ARG QD_VERSION=2.4.1
 ENV QD_VERSION=$QD_VERSION
-ENV BUILD_ID=$BUILD_ID
+
 ENV PATH=/root/.qd/bin:$PATH
 ENV QD_MESSAGE_TS=true
 
@@ -58,7 +58,15 @@ RUN cd /root \
             --command render \
             --command ubuntu:add-ppa-repo \
             --command ubuntu:begin-apt-install \
-            --command ubuntu:end-apt-install
+            --command ubuntu:end-apt-install \
+            --module watchman \
+        && qd watchman:install
+
+ARG BUILD_ID
+ENV BUILD_ID=$BUILD_ID
+
+ONBUILD ARG BUILD_ID
+ONBUILD ENV BUILD_ID=$BUILD_ID
 
 COPY root /
 COPY .qd /root/.qd

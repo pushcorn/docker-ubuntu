@@ -1,0 +1,7 @@
+# client keys should be generated with `ssh-keygen -t ed25519`
+
+#? tinyssh.etc: /etc/tinyssh
+#? tinyssh.keydir: /etc/tinyssh/keydir
+#? tinyssh.port: 22
+#? tinyssh.address: 0.0.0.0
+#? tinyssh.log: /proc/1/fd/1
