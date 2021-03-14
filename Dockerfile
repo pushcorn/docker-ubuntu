@@ -40,8 +40,7 @@ RUN apt-get update \
         && tic xterm.src \
         && rm ./*
 
-ARG QD_VERSION=2.4.1
-ENV QD_VERSION=$QD_VERSION
+ENV QD_VERSION=2.4.2
 
 ENV PATH=/root/.qd/bin:$PATH
 ENV QD_MESSAGE_TS=true
@@ -62,12 +61,9 @@ RUN cd /root \
             --module watchman \
         && qd watchman:install
 
-ARG BUILD_ID
-ENV BUILD_ID=$BUILD_ID
+ONBUILD COPY Dockerfile root.build* /
 
-ONBUILD ARG BUILD_ID
-ONBUILD ENV BUILD_ID=$BUILD_ID
-
+COPY Dockerfile root.build* /
 COPY root /
 COPY .qd /root/.qd
 
