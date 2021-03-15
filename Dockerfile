@@ -6,7 +6,15 @@ ARG TIMEZONE=America/Indiana/Indianapolis
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update \
+ONBUILD COPY Dockerfile root.build* root* /
+ONBUILD COPY Dockerfile .qd* /root/.qd/
+ONBUILD RUN rm /Dockerfile /root/.qd/Dockerfile
+
+COPY Dockerfile root.build* root* /
+COPY Dockerfile .qd* /root/.qd/
+
+RUN rm /Dockerfile /root/.qd/Dockerfile \
+    && apt-get update \
     && apt-get -y install \
         bash-completion \
         curl \
@@ -40,8 +48,7 @@ RUN apt-get update \
         && tic xterm.src \
         && rm ./*
 
-ENV QD_VERSION=2.4.4
-
+ENV QD_VERSION=2.4.5
 ENV PATH=/root/.qd/bin:$PATH
 ENV QD_MESSAGE_TS=true
 
@@ -60,12 +67,6 @@ RUN cd /root \
             --command ubuntu:end-apt-install \
             --module watchman \
         && qd watchman:install
-
-ONBUILD COPY Dockerfile root.build* /
-
-COPY Dockerfile root.build* /
-COPY root /
-COPY .qd /root/.qd
 
 WORKDIR /root
 
