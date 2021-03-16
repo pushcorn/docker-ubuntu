@@ -49,7 +49,7 @@ RUN rm /Dockerfile /root/.qd/Dockerfile \
         && sed -e 's/smcup[^,]*,\s*//' -e 's/rmcup[^,]*,\s*//' xterm > xterm.src \
         && tic xterm.src \
         && dpkg -i vim-common_8.2.2539-0york0~20.04_all.deb vim-tiny_8.2.2539-0york0~20.04_amd64.deb \
-        && rm -rf ./* /media /opt /run /srv /home /var/lib/apt/lists/* /etc/cron*
+        && rm -rf ./* /media /opt /srv /home /var/lib/apt/lists/* /etc/cron*
 
 ENV QD_VERSION=2.4.8
 ENV PATH=/root/.qd/bin:$PATH
