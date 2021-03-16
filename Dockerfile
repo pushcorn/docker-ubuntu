@@ -14,6 +14,7 @@ COPY Dockerfile root.build* root* /
 COPY Dockerfile .qd* /root/.qd/
 
 RUN rm /Dockerfile /root/.qd/Dockerfile \
+    && chmod -R a+w /tmp \
     && apt-get update \
     && apt-get -y install \
         bash-completion \
@@ -23,6 +24,7 @@ RUN rm /Dockerfile /root/.qd/Dockerfile \
         jq \
         locales \
         netcat \
+        openssh-client \
         rsync \
         silversearcher-ag \
         telnet \
@@ -31,8 +33,8 @@ RUN rm /Dockerfile /root/.qd/Dockerfile \
         tzdata \
         ucspi-tcp \
         unzip \
-        vim-tiny \
-    && rm -rf /var/lib/apt/lists/* /etc/cron* \
+        xxd \
+        zip \
     \
     && cd /usr/share/i18n \
         && find locales/ -type f ! -name en_US ! -name en_GB ! -name "translit*" ! -name C ! -name POSIX ! -name "i18n*" ! -name iso14651_t1_common ! -name iso14651_t1 -delete \
@@ -46,9 +48,10 @@ RUN rm /Dockerfile /root/.qd/Dockerfile \
         && infocmp -I xterm > xterm \
         && sed -e 's/smcup[^,]*,\s*//' -e 's/rmcup[^,]*,\s*//' xterm > xterm.src \
         && tic xterm.src \
-        && rm ./*
+        && dpkg -i vim-common_8.2.2539-0york0~20.04_all.deb vim-tiny_8.2.2539-0york0~20.04_amd64.deb \
+        && rm -rf ./* /media /opt /run /srv /home /var/lib/apt/lists/* /etc/cron*
 
-ENV QD_VERSION=2.4.7
+ENV QD_VERSION=2.4.8
 ENV PATH=/root/.qd/bin:$PATH
 ENV QD_MESSAGE_TS=true
 

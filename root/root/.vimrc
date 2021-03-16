@@ -1,3 +1,10 @@
+au FileType netrw setl bufhidden=wipe
+
+
+set laststatus=2
+set statusline+=%F
+set redrawtime=10000
+syntax sync minlines=10000
 set nocompatible
 set nowrap
 set nowritebackup
@@ -59,11 +66,9 @@ vnoremap p <Esc>:let current_reg = @"<CR>gvs<C-R>=current_reg<CR><Esc>
 map    qy  :w! ~/.qd_clip<CR>:*y<CR><Left>
 map    qx  :w! ~/.qd_clip<CR>:*d<CR><Left>
 map    qp  :r ~/.qd_clip<CR>
-" send the clipped text to the remote host
-map    qw  :w! ~/.qd_clip_remote<CR> :QdWriteClip <C-R>=join(readfile (expand ("~/.qd_last_clip_host")), '\n')<CR>
-" past the clipped text from the remote host
-map    qr  :QdReadClip <C-R>=join(readfile (expand ("~/.qd_last_clip_host")), '\n')<CR>
 
+let mapleader=","
+let g:bufExplorerSplitBelow=1
 
 nmap    <F11>  :w<CR>:bdelete<CR>
 nmap    <F6>  :w<CR>
@@ -81,3 +86,64 @@ map <C-I> g<C-G>
 
 nnoremap <D-Left> :tabprevious<CR>
 nnoremap <D-Right> :tabnext<CR>
+
+let g:netrw_hide = 1
+let g:netrw_liststyle = 3
+let g:netrw_sort_sequence = '*'
+let g:sh_isk = &iskeyword
+let g:launch_dir=getcwd ().'/'
+
+augroup netrw_mapping
+    autocmd!
+    autocmd filetype netrw call NetrwMapping()
+augroup END
+
+function! NetrwMapping()
+    noremap <buffer> <c-l> <c-w>>
+    noremap <buffer> <c-h> <c-w><
+endfunction
+
+map <leader>/ <plug>NERDCommenterToggle
+imap <leader>/ <Esc><plug>NERDCommenterTogglei
+nnoremap <Leader>s :%s/\<<C-r><C-w>\>/
+nnoremap <Leader>ss :cexpr []<CR>:silent grep "<C-r><C-w>" * -r -i -a<CR>:cw<CR>:redraw!<CR>
+nnoremap <Leader>e :edit <C-r>=launch_dir<CR><C-D>
+nnoremap <Leader>f gf<CR>
+nnoremap <Leader>t :vert term<CR>
+" to vertical
+nnoremap <Leader>wv :wincmd H<CR>
+" to horizontal
+nnoremap <Leader>wh :wincmd J<CR>
+" rotate
+nnoremap <Leader>wr :wincmd r<CR>
+
+let g:NERDSpaceDelims = 1
+let g:NERDTrimTrailingWhitespace = 1
+let g:NERDCustomDelimiters = {
+    \ 'hocon': { 'left': '#', 'leftAlt': '//' },
+    \ 'qonf': { 'left': '##', 'leftAlt': '#{', 'rightAlt': '#}' },
+    \ 'html': {  'left': '<!-- ', 'right': '-->', 'leftAlt': '/*','rightAlt': '*/' },
+    \ 'xhtml': {  'left': '<!-- ', 'right': '-->', 'leftAlt': '/*','rightAlt': '*/'},
+    \}
+
+" save cursor
+function! ResCur()
+  if line("'\"") <= line("$")
+    normal! g`"
+    return 1
+  endif
+endfunction
+
+augroup resCur
+  autocmd!
+  autocmd BufWinEnter * call ResCur()
+augroup END
+
+
+" Switch syntax highlighting on, when the terminal has colors
+" Also switch on highlighting the last used search pattern.
+if &t_Co > 2 || has("gui_running")
+  syntax on
+  set hlsearch
+  set foldmethod=indent
+endif
