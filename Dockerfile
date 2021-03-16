@@ -48,7 +48,7 @@ RUN rm /Dockerfile /root/.qd/Dockerfile \
         && tic xterm.src \
         && rm ./*
 
-ENV QD_VERSION=2.4.7
+ENV QD_VERSION=2.4.8
 ENV PATH=/root/.qd/bin:$PATH
 ENV QD_MESSAGE_TS=true
 
