@@ -1,0 +1,481 @@
+#!/usr/bin/make -f
+
+export DH_OPTIONS
+
+# Upstream handles the _FORTIFY_SOURCE flag on their own
+DEB_BUILD_MAINT_OPTIONS=hardening=+all,-fortify
+
+include /usr/share/dpkg/default.mk
+
+#BUILDER := team+vim@tracker.debian.org
+BUILDER := jonathon.fernyhough@york.ac.uk
+
+MAKETEST := no
+ifeq ($(DEB_HOST_GNU_TYPE),$(DEB_BUILD_GNU_TYPE))
+  ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+    MAKETEST := yes
+  endif
+endif
+
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+    NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+    MAKEFLAGS += -j$(NUMJOBS)
+endif
+
+CFGFLAGS = --prefix=/usr --mandir='$${prefix}'/share/man --without-local-dir
+CFGFLAGS += --with-modified-by="$(BUILDER)"
+CFGFLAGS += --with-compiledby="$(BUILDER)"
+CFGFLAGS += --enable-fail-if-missing
+CFGFLAGS += --with-global-runtime='/var/lib/vim/addons,/etc/vim,$$VIM/vimfiles'
+
+TINYFLAGS:=--with-features=normal
+TINYFLAGS+=--disable-gui
+TINYFLAGS+=--disable-xsmp
+TINYFLAGS+=--disable-xsmp-interact
+TINYFLAGS+=--disable-netbeans
+TINYFLAGS+=--disable-gpm
+# TINYFLAGS+=--enable-nls
+# TINYFLAGS+=--enable-acl
+TINYFLAGS+=--disable-terminal
+TINYFLAGS+=--disable-canberra
+
+OPTFLAGS:=--enable-cscope
+ifeq ($(DEB_HOST_ARCH_OS),linux)
+    OPTFLAGS+=--enable-canberra
+    OPTFLAGS+=--enable-gpm
+    OPTFLAGS+=--enable-selinux --disable-smack
+    # TINYFLAGS+=--enable-selinux --disable-smack
+else
+    OPTFLAGS+=--disable-canberra
+    OPTFLAGS+=--disable-gpm
+endif
+OPTFLAGS+=--with-features=huge
+OPTFLAGS+=--enable-acl
+OPTFLAGS+=--enable-terminal
+
+NOXFLAGS:=--without-x
+NOXFLAGS+=--enable-gui=no
+
+GUIFLAGS:=--with-x
+GUIFLAGS+=--enable-xim
+
+GTK2FLAGS:=--enable-gui=gtk2
+GTK2FLAGS+=--enable-gtk2-check
+GTK2FLAGS+=--disable-gnome-check
+GTK2FLAGS+=--disable-motif-check
+GTK2FLAGS+=--disable-athena-check
+GTK2FLAGS+=--disable-fontset
+
+GTK3FLAGS:=--enable-gui=gtk3
+GTK3FLAGS+=--enable-gtk3-check
+GTK3FLAGS+=--disable-gnome-check
+GTK3FLAGS+=--disable-motif-check
+GTK3FLAGS+=--disable-athena-check
+GTK3FLAGS+=--disable-fontset
+
+ATHENAFLAGS:=--enable-gui=athena
+ATHENAFLAGS+=--disable-gtk2-check
+ATHENAFLAGS+=--disable-gtk3-check
+ATHENAFLAGS+=--disable-gnome-check
+ATHENAFLAGS+=--disable-motif-check
+ATHENAFLAGS+=--enable-athena-check
+ATHENAFLAGS+=--enable-fontset
+
+NOINTERPFLAGS:=--disable-luainterp
+NOINTERPFLAGS+=--disable-mzschemeinterp
+NOINTERPFLAGS+=--disable-perlinterp
+ifeq ($(DEB_VENDOR),Ubuntu)
+	NOINTERPFLAGS+=--enable-python3interp --with-python3-config-dir=$(shell python3-config --configdir)
+	NOINTERPFLAGS+=--disable-pythoninterp
+else
+	NOINTERPFLAGS+=--disable-pythoninterp
+	NOINTERPFLAGS+=--disable-python3interp
+endif
+RUBY_SUBSTVARS=-Vvim:Ruby-Provides=vim-ruby -Vvim:Ruby-Desc=" Ruby,"
+NOINTERPFLAGS+=--disable-rubyinterp
+NOINTERPFLAGS+=--disable-tclinterp
+
+ALLINTERPFLAGS:=--enable-luainterp
+ALLINTERPFLAGS+=--disable-mzschemeinterp
+ALLINTERPFLAGS+=--enable-perlinterp
+ALLINTERPFLAGS+=--enable-python3interp --with-python3-config-dir=$(shell python3-config --configdir)
+ALLINTERPFLAGS+=--disable-pythoninterp
+ALLINTERPFLAGS+=--enable-rubyinterp
+ALLINTERPFLAGS+=--enable-tclinterp
+ALLINTERPFLAGS+=--with-tclsh=/usr/bin/tclsh
+
+# Each vim-xxx package is said to be a vim variant and contains only a vim
+# binary built with some compile-time options. Makefile VARIANTS below are
+# one-to-one with those packages with the exception of "vim-basic". In this
+# Makefile vim-basic is used to build 4 packages: "vim", "vim-runtime",
+# "vim-common", "vim-gui-common". "vim-tiny" is the only variant package not
+# depending on vim-runtime.
+
+VARIANTS+=vim-tiny
+VARIANTS+=vim-gtk
+VARIANTS+=vim-gtk3
+VARIANTS+=vim-athena
+VARIANTS+=vim-nox
+VARIANTS+=vim-basic
+
+VARIANTS+=vim-gtk-py2
+VARIANTS+=vim-gtk3-py2
+VARIANTS+=vim-athena-py2
+VARIANTS+=vim-nox-py2
+
+ifneq ($(origin VARIANT), undefined)
+	VARIANTS = $(VARIANT) vim-basic
+endif
+
+CFLAGS_vim-basic:=$(CFLAGS)
+CFGFLAGS_vim-basic:=$(CFGFLAGS) $(OPTFLAGS) $(NOXFLAGS) $(NOINTERPFLAGS)
+
+CFLAGS_vim-tiny:=$(CFLAGS) -DTINY_VIMRC
+CFGFLAGS_vim-tiny:=$(CFGFLAGS) $(TINYFLAGS) $(NOXFLAGS)
+
+CFLAGS_vim-gtk:=$(CFLAGS)
+CFGFLAGS_vim-gtk:=$(CFGFLAGS) $(OPTFLAGS) $(GUIFLAGS) $(GTK2FLAGS) $(ALLINTERPFLAGS)
+
+CFLAGS_vim-gtk3:=$(CFLAGS)
+CFGFLAGS_vim-gtk3:=$(CFGFLAGS) $(OPTFLAGS) $(GUIFLAGS) $(ALLINTERPFLAGS) $(GTK3FLAGS)
+
+CFLAGS_vim-athena:=$(CFLAGS)
+CFGFLAGS_vim-athena:=$(CFGFLAGS) $(OPTFLAGS) $(GUIFLAGS) $(ATHENAFLAGS) $(ALLINTERPFLAGS)
+
+CFLAGS_vim-nox:=$(CFLAGS)
+CFGFLAGS_vim-nox:=$(CFGFLAGS) $(OPTFLAGS) $(NOXFLAGS) $(ALLINTERPFLAGS)
+
+CFLAGS_vim-gtk-py2:=$(CFLAGS)
+CFGFLAGS_vim-gtk-py2:= $(filter-out --enable-python3interp --with-python3-config-dir=%, $(CFGFLAGS_vim-gtk)) \
+	--disable-python3interp \
+	--enable-pythoninterp --with-python-config-dir=$(shell python2-config --configdir)
+
+CFLAGS_vim-gtk3-py2:=$(CFLAGS)
+CFGFLAGS_vim-gtk3-py2:= $(filter-out --enable-python3interp --with-python3-config-dir=%, $(CFGFLAGS_vim-gtk3)) \
+	--disable-python3interp \
+	--enable-pythoninterp --with-python-config-dir=$(shell python2-config --configdir)
+
+CFLAGS_vim-athena-py2:=$(CFLAGS)
+CFGFLAGS_vim-athena-py2:= $(filter-out --enable-python3interp --with-python3-config-dir=%, $(CFGFLAGS_vim-athena)) \
+	--disable-python3interp \
+	--enable-pythoninterp --with-python-config-dir=$(shell python2-config --configdir)
+
+CFLAGS_vim-nox-py2:=$(CFLAGS)
+CFGFLAGS_vim-nox-py2:= $(filter-out --enable-python3interp --with-python3-config-dir=%, $(CFGFLAGS_vim-nox)) \
+	--disable-python3interp \
+	--enable-pythoninterp --with-python-config-dir=$(shell python2-config --configdir)
+
+NAME:=vim
+# Convert x.y.z to x.y
+# VERSION:=$(basename $(DEB_VERSION_UPSTREAM))
+VERSION:=$(shell echo $(DEB_VERSION_UPSTREAM) | sed -n "s/\([[:digit:]]*\.[[:digit:]]*\).*/\1/p")
+VIMCUR:=$(NAME)$(subst .,,$(VERSION))
+PER_VARIANT_FILES := install postinst prerm lintian-overrides maintscript
+LANGS := da de fr it ja pl ru
+
+DOT_IN_DEPS := debian/vim-common.install
+DOT_IN_DEPS += debian/vim-runtime.links
+DOT_IN_DEPS += debian/vim-runtime.postrm
+DOT_IN_DEPS += debian/vim-runtime.preinst
+DOT_IN_DEPS_TINY := debian/tiny/vimrc.tiny
+
+# nothing to do per default
+all:
+
+update-changelog:
+	dh_testdir
+	wget -O debian/changelog.upstream http://ftp.vim.org/pub/vim/patches/$(VERSION)/README
+
+clean: $(foreach v,$(VARIANTS),clean-$(v))
+	dh_testdir
+	dh_testroot
+	[ ! -f src/auto/config.cache ] || make distclean
+	[ ! -f debian/configure.dist ] || mv debian/configure.dist src/auto/configure
+	find src/testdir -name '*.pyc' -delete
+	dh_clean
+
+clean-vim-basic:
+	dh_testdir
+	dh_testroot
+	for x in $(PER_VARIANT_FILES) ; do \
+	  rm -f debian/vim.$$x ; \
+	done
+	[ ! -L src/vim-basic/po ] || $(MAKE) -C src/vim-basic/po clean
+	rm -f $(DOT_IN_DEPS)
+	rm -rf src/vim-basic
+
+clean-%: SHADOWDIR=$*
+clean-%:
+	dh_testdir
+	dh_testroot
+	for x in $(PER_VARIANT_FILES) ; do \
+	  rm -f debian/$*.$$x ; \
+	done
+	if [ "$*" = "vim-tiny" ]; then \
+	  rm -f $(DOT_IN_DEPS_TINY); \
+	fi
+	rm -rf src/$(SHADOWDIR)
+
+build: build-arch-stamp
+
+build-indep: build-indep-stamp
+build-indep-stamp: export DH_OPTIONS=-pvim-doc
+build-indep-stamp: autoconf-stamp
+	dh_testdir
+	dh_prep
+	$(MAKE) -C runtime/doc html
+	$(MAKE) -C debian/policy text html
+	$(MAKE) -C src/po vim.pot
+	touch $@
+
+build-arch: build-arch-stamp
+build-arch-stamp: build-xxd-stamp $(foreach v,$(VARIANTS),build-$(v)-stamp)
+	dh_testdir
+	touch $@
+
+build-xxd-stamp: export DH_OPTIONS=-pxxd
+build-xxd-stamp: build-vim-basic-stamp
+	dh_testdir
+	dh_prep
+	$(MAKE) -C src/vim-basic xxd/xxd
+	touch $@
+
+autoconf-stamp:
+	dh_testdir
+	[ -f debian/configure.dist ] || cp src/auto/configure debian/configure.dist
+# src/Makefile includes src/auto/config.mk, so we need to ensure it exists.
+# distclean will then wipe it out and re-copy it.
+	[ -f src/auto/config.mk ] || cp src/config.mk.dist src/auto/config.mk
+# The autoconf target generates a new configure, and touches some other
+# configure-related things.  Need to run distclean afterward or timestamps
+# will be off and the next make that runs will think it needs to run
+# configure.  This breaks parallel builds since two configures are being run
+# in the same directory at the same time instead of in their own shadow
+# directories.
+	$(MAKE) -C src autoconf
+	$(MAKE) -C src scratch
+	touch $@
+
+configure-%-stamp: SHADOWDIR=$*
+# When configure.in is being patched by Debian, autoconf-stamp needs to be a
+# prerequisite for this target and autoconf needs to be added to Build-Depends
+configure-%-stamp: autoconf-stamp
+	dh_testdir
+	@echo "*** DEBIAN *** CONFIGURING VARIANT $*"
+	$(MAKE) -C src shadow SHADOWDIR=$(SHADOWDIR)
+	cd src/$(SHADOWDIR) && LDFLAGS="$(LDFLAGS)" CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS_$(*))" ./configure $(CFGFLAGS_$(*))
+	touch $@
+
+build-%-stamp: PKG=$(subst -basic,,$*)
+build-%-stamp: CURCFLAGS=$(CFLAGS_$*)
+build-%-stamp: SHADOWDIR=$*
+build-%-stamp: configure-%-stamp
+	dh_testdir
+	dh_prep -p $(PKG)
+	@echo "*** DEBIAN *** BUILDING VARIANT $*"
+	$(MAKE) -C src/$(SHADOWDIR)
+	$(MAKE) -C runtime/doc tags VIMEXE=$(CURDIR)/src/$(SHADOWDIR)/vim
+	# Ensure $TERM is set to a sane value for testing
+	[ $(MAKETEST) != "yes" ] || env LANG=C.UTF-8 TERM=xterm $(MAKE) -j1 -C src/$(SHADOWDIR) test
+	touch $@
+
+install: install-xxd-stamp $(foreach v,$(VARIANTS),install-$(v)-stamp)
+
+# Use UTF-8 manpages for all languages
+# If a .UTF-8 directory doesn't exist, then the $L directory is already UTF-8.
+define munge-man-directories
+for L in $(LANGS); do \
+  if [ -d "$(DESTDIR)/usr/share/man/$$L.UTF-8" ]; then \
+    rm -rf "$(DESTDIR)/usr/share/man/$$L"; \
+    mv "$(DESTDIR)/usr/share/man/$$L.UTF-8" "$(DESTDIR)/usr/share/man/$$L"; \
+  fi; \
+  rm -rf "$(DESTDIR)/usr/share/man/$$L."*; \
+done
+endef
+
+install-indep-stamp: export DH_OPTIONS=-i
+install-indep-stamp: DESTDIR=$(CURDIR)/debian/tmp
+install-indep-stamp: build-vim-basic-stamp build-indep-stamp $(DOT_IN_DEPS)
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+
+	mkdir -p "$(DESTDIR)/usr/bin"
+	# installruntime requires a "vim" in /usr/bin
+	cp src/vim-basic/vim "$(DESTDIR)/usr/bin"
+	$(MAKE) -C src/vim-basic "DESTDIR=$(DESTDIR)" \
+	    installtutorbin \
+	    installgtutorbin \
+	    installruntime \
+	    install-languages \
+	    install-icons
+	rm -f "$(DESTDIR)/usr/bin/vim"
+
+	$(munge-man-directories)
+
+	# rm stuff handled by alternatives or our own symlinks
+	find "$(DESTDIR)/usr/share/man" \( -name view.1 -o -name ex.1 -o -name rvim.1 -o -name rview.1 \) -delete
+
+	# helpztags manpage
+	pod2man -c "User Commands" -s 1 -q none -r "vim $(VERSION)" \
+		-d "August 2010" debian/helpztags debian/helpztags.1
+
+	# Icons
+	for sz in 16 32 48; do \
+	  cp runtime/vim$${sz}x$${sz}.xpm debian/vim-common/usr/share/pixmaps/vim-$${sz}.xpm; \
+	done
+	gs -sDefaultCMYKProfile=ps_cmyk.icc -sOutputICCProfile=ps_rgb.icc \
+	    -dSAFER -dEPSCrop -dBATCH -dNOPAUSE \
+	    -sDEVICE=ps2write -sOutputFile=debian/tmplogo.ps runtime/vimlogo.eps
+	ps2pdf debian/tmplogo.ps debian/tmplogo.pdf
+	pdf2svg debian/tmplogo.pdf debian/vim-common/usr/share/pixmaps/gvim.svg
+	cp debian/vim-common/usr/share/pixmaps/gvim.svg \
+	   debian/vim-common/usr/share/icons/hicolor/scalable/apps/gvim.svg
+
+	dh_install
+	# adjust things for vim-gui-common
+	cp debian/vim-common/usr/share/man/man1/vim.1 \
+	   debian/vim-gui-common/usr/share/man/man1/gvim.1
+	cp debian/vim-common/usr/share/man/man1/vimdiff.1 \
+	   debian/vim-gui-common/usr/share/man/man1/gvimdiff.1
+	cp debian/vim-runtime/usr/share/man/man1/vimtutor.1 \
+	   debian/vim-gui-common/usr/share/man/man1/gvimtutor.1
+	for L in $(LANGS); do \
+	  DIR=usr/share/man/$$L; \
+	  [ ! -e "debian/vim-common/$$DIR/man1/vim.1" ] || \
+	    cp debian/vim-common/$$DIR/man1/vim.1 \
+	       debian/vim-gui-common/$$DIR/man1/gvim.1; \
+	  [ ! -e "debian/vim-common/$$DIR/man1/vimdiff.1" ] || \
+	    cp debian/vim-common/$$DIR/man1/vimdiff.1 \
+	       debian/vim-gui-common/$$DIR/man1/gvimdiff.1; \
+	  [ ! -e "debian/vim-runtime/$$DIR/man1/vimtutor.1" ] || \
+	    cp debian/vim-runtime/$$DIR/man1/vimtutor.1 \
+	       debian/vim-gui-common/$$DIR/man1/gvimtutor.1; \
+	done
+	dh_link
+	dh_installman
+	dh_installchangelogs debian/changelog.upstream
+	dh_installdocs
+	dh_installmime
+	dh_missing --list-missing
+	touch $@
+
+install-xxd-stamp: export DH_OPTIONS=-pxxd
+install-xxd-stamp: DESTDIR=$(CURDIR)/debian/xxd
+install-xxd-stamp: build-xxd-stamp
+	dh_testdir
+	dh_testroot
+	$(MAKE) -C src/vim-basic STRIP=: DESTDIR=$(DESTDIR) installtools install-tool-languages
+	rm -r $(DESTDIR)/usr/share/vim
+	$(munge-man-directories)
+	# No xxd.1 translations for Danish or German yet
+	rmdir $(DESTDIR)/usr/share/man/da/man1 $(DESTDIR)/usr/share/man/da \
+	      $(DESTDIR)/usr/share/man/de/man1 $(DESTDIR)/usr/share/man/de
+	dh_installchangelogs
+	dh_installdocs
+	touch $@
+
+install-%-stamp: PKG=$(subst -basic,,$*)
+install-%-stamp: export DH_OPTIONS=-p$(PKG)
+install-%-stamp: DESTDIR=$(CURDIR)/debian/$(PKG)
+install-%-stamp: VARIANT=$(patsubst vim-%,%,$*)
+install-%-stamp: build-%-stamp
+	dh_testdir
+	dh_testroot
+	@echo "*** DEBIAN *** INSTALLING VARIANT $*"
+	dh_installdirs
+
+	cp src/$*/vim src/$*/$(subst .py2,-py2,$(subst -,.,$*))
+	# variant-related installations
+	for x in $(PER_VARIANT_FILES) ; do \
+	  case "$(PKG)" in \
+	    vim-nox|vim|vim-tiny) \
+	      sed -e "s:@PKG@:$(PKG):g" -e "s:@VARIANT@:$(VARIANT):g" \
+	          -e "s:@COMMON@:vim-common:g" \
+	          debian/vim-variant.$$x > debian/$(PKG).$$x ;\
+	      ;; \
+	    *) \
+	      sed -e "s:@PKG@:$(PKG):g" -e "s:@VARIANT@:$(VARIANT):g" \
+	          -e "s:@COMMON@:vim-gui-common:g" \
+	          debian/vim-variant.$$x > debian/$(PKG).$$x ;\
+	      ;; \
+	  esac \
+	done
+	for L in $(LANGS); do \
+	  sed -e "s:\(.*\)@LANG_ALTS@:\1--slave \$$mandir/$$L/man1/\$$i.1.gz \$$i.$$L.1.gz \$$mandir/$$L/man1/vim.1.gz \\\\\n&:" \
+	      -i debian/$(PKG).postinst; \
+	done
+	sed -i "/@LANG_ALTS@/d" debian/$(PKG).postinst
+	# fake help installation for vim-tiny
+	if [ "$(PKG)" = "vim-tiny" ]; then \
+	  $(MAKE) -f debian/rules $(DOT_IN_DEPS_TINY); \
+	  echo "debian/tiny/doc/	usr/share/vim/$(VIMCUR)" >> debian/vim-tiny.install; \
+	  echo "debian/tiny/vimrc.tiny	etc/vim" >> debian/vim-tiny.install; \
+	fi
+	dh_install
+	dh_installchangelogs debian/changelog.upstream
+	dh_installdocs
+	dh_link
+	dh_bugfiles -A
+	dh_missing --list-missing
+
+	touch $@
+
+%: %.in
+	cat $< | sed 's/@VIMCUR@/$(VIMCUR)/' > $@
+
+binary-indep: export DH_OPTIONS=-i
+binary-indep: install-indep-stamp
+	dh_testdir
+	dh_testroot
+	dh_compress
+	dh_fixperms
+	dh_lintian
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary-arch: binary-arch-xxd $(foreach v,$(VARIANTS),binary-arch-$(v))
+
+binary-arch-%: PKG=$(subst -basic,,$*)
+binary-arch-%: export DH_OPTIONS=-p$(PKG) $(foreach v,$(VARIANTS_SKIP),-N$(v))
+binary-arch-%: install-%-stamp
+	dh_testdir
+	dh_testroot
+	dh_strip --dbgsym-migration='vim-dbg (<< 2:7.4.1689-1~)'
+	dh_compress
+	dh_fixperms
+	dh_lintian
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol -- $(RUBY_SUBSTVARS)
+	dh_md5sums
+	dh_builddeb
+
+binary-arch-xxd: export DH_OPTIONS=-pxxd
+binary-arch-xxd: install-xxd-stamp
+	dh_testdir
+	dh_testroot
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: beginlog binary-indep binary-arch endlog
+.PHONY: patch unpatch extract clean build install binary-indep binary-arch binary
+
+.PHONY: beginlog endlog
+beginlog:
+	@echo "*** DEBIAN *** BUILD STARTED"
+	@echo "*** DEBIAN *** BUILDING VARIANTS: $(VARIANTS)"
+	@echo "*** DEBIAN *** SKIPPING VARIANTS: $(VARIANTS_SKIP)"
+endlog:
+	@echo "*** DEBIAN *** BUILD COMPLETED"
+
+.NOTPARALLEL:
+# vim: set foldmethod=marker:
