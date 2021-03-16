@@ -23,7 +23,7 @@ alias l.='ls -d .[a-zA-Z]* --color=auto'
 function s {
     if [ -n "$1" ]; then
         if [ -n "$(which ag)" ]; then
-            ag -iz --hidden "$1"
+            ag -i --hidden "$1"
         else
             grep "$1" * -r -i -a
         fi
